@@ -8,6 +8,7 @@ use App\Models\Space;
 use App\Models\PricingOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -37,7 +38,7 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        // Validation selon le type de durée
+        // Validation des règles de base
         $rules = [
             'space_id' => 'required|exists:spaces,id',
             'duration_type' => 'required|in:hourly,2_hours,half_day,daily,weekly,monthly,yearly',
@@ -45,7 +46,8 @@ class BookingController extends Controller
             'guest_email' => 'required|email|max:255',
             'guest_phone' => 'required|string|max:20',
             'notes' => 'nullable|string|max:500',
-            'student_discount' => 'nullable|boolean'
+            'student_discount' => 'nullable|boolean',
+            'room_size' => 'nullable|in:small,large',
         ];
 
         // Règles spécifiques selon le type de durée
@@ -57,7 +59,14 @@ class BookingController extends Controller
             $rules['end_date'] = 'required|date|after_or_equal:start_date';
         }
 
-        $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Erreur de validation'
+            ], 422);
+        }
 
         $space = Space::findOrFail($request->space_id);
         
@@ -114,8 +123,13 @@ class BookingController extends Controller
             'guest_name' => $guestName,
             'guest_email' => $guestEmail,
             'guest_phone' => $guestPhone,
-            'guest_token' => $token
+            'guest_token' => $token,
         ];
+
+        // Ajouter room_size seulement s'il est présent
+        if ($request->has('room_size')) {
+            $bookingData['room_size'] = $request->room_size;
+        }
         
         // Ajouter les champs spécifiques selon le type
         if (in_array($request->duration_type, ['hourly', '2_hours', 'half_day', 'daily'])) {
@@ -136,6 +150,7 @@ class BookingController extends Controller
             'booking' => $booking->load('space'),
             'token' => $token,
             'discount_applied' => $discount > 0 ? $discount : null,
+            'room_size' => $request->room_size,
             'message' => 'Réservation créée avec succès.',
             'confirmation_url' => url("/api/bookings/{$token}/confirm")
         ], 201);

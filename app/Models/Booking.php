@@ -31,7 +31,8 @@ class Booking extends Model
         'guest_name',
         'guest_email',
         'guest_phone',
-        'guest_token'
+        'guest_token',
+        'room_size',
     ];
 
     /**
@@ -45,7 +46,8 @@ class Booking extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'total_amount' => 'decimal:2',
-        'unit_price' => 'decimal:2'
+        'unit_price' => 'decimal:2',
+        'room_size' => 'string',
     ];
 
     /**
@@ -222,7 +224,14 @@ class Booking extends Model
               });
         });
     }
-
+    public function getRoomSizeLabelAttribute()
+{
+    $labels = [
+        'small' => 'Petite salle',
+        'large' => 'Grande salle',
+    ];
+    return $labels[$this->room_size] ?? $this->room_size;
+}
     public function scopeOnDate($query, $date)
     {
         return $query->whereDate('booking_date', $date);

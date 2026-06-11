@@ -5,10 +5,12 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\SpaceController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\GalleryController;
+use App\Http\Controllers\API\ContactController;
 use App\Http\Controllers\API\Admin\DashboardController;
 use App\Http\Controllers\API\Admin\SpaceController as AdminSpaceController;
 use App\Http\Controllers\API\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\API\Admin\GalleryController as AdminGalleryController;
+use App\Http\Controllers\API\Admin\ContactController as AdminContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,16 +22,22 @@ use App\Http\Controllers\API\Admin\GalleryController as AdminGalleryController;
 // ROUTES PUBLIQUES
 // =============================================
 
+// Authentification
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Espaces
 Route::get('/spaces', [SpaceController::class, 'index']);
 Route::get('/spaces/{slug}', [SpaceController::class, 'show']);
 Route::get('/spaces/{id}/availability', [SpaceController::class, 'checkAvailability']);
 Route::get('/spaces/{id}/pricing', [BookingController::class, 'getPricingOptions']);
 
+// Galerie
 Route::get('/gallery', [GalleryController::class, 'index']);
 Route::get('/gallery/{slug}', [GalleryController::class, 'show']);
+
+// Contact (public)
+Route::post('/contacts', [ContactController::class, 'store']);
 
 // =============================================
 // ROUTES RÉSERVATIONS (publiques)
@@ -63,9 +71,12 @@ Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
         
+        // Dashboard
         Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
         
-        // Espaces - apiResource sans les routes en conflit
+        // =============================================
+        // GESTION DES ESPACES
+        // =============================================
         Route::apiResource('spaces', AdminSpaceController::class)->except(['show']);
         Route::get('/spaces/{id}', [AdminSpaceController::class, 'show']);
         
@@ -84,7 +95,9 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::delete('/{pricingId}', [AdminSpaceController::class, 'deletePricingOption']);
         });
         
-        // Réservations
+        // =============================================
+        // GESTION DES RÉSERVATIONS
+        // =============================================
         Route::prefix('bookings')->group(function () {
             Route::get('/', [AdminBookingController::class, 'index']);
             Route::get('/stats', [AdminBookingController::class, 'stats']);
@@ -93,6 +106,19 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::delete('/{id}', [AdminBookingController::class, 'destroy']);
         });
         
-        // Galerie
+        // =============================================
+        // GESTION DE LA GALERIE
+        // =============================================
         Route::apiResource('gallery', AdminGalleryController::class);
+        
+        // =============================================
+        // GESTION DES CONTACTS
+        // =============================================
+        Route::prefix('contacts')->group(function () {
+            Route::get('/', [AdminContactController::class, 'index']);
+            Route::get('/stats', [AdminContactController::class, 'stats']);
+            Route::get('/{id}', [AdminContactController::class, 'show']);
+            Route::put('/{id}/reply', [AdminContactController::class, 'markAsReplied']);
+            Route::delete('/{id}', [AdminContactController::class, 'destroy']);
+        });
     });

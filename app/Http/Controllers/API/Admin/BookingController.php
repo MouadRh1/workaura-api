@@ -28,6 +28,7 @@ class BookingController extends Controller
             ->orderBy('start_time', 'asc')
             ->paginate(20);
         
+        
         return response()->json($bookings);
     }
 
