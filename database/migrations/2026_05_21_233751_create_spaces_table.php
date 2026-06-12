@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->enum('type', ['private', 'coworking', 'meeting','terrace']);
+            $table->enum('type', ['private', 'coworking', 'meeting','formation','terrace']);
             $table->string('capacity');
             $table->decimal('price', 10, 2);
             $table->text('description');

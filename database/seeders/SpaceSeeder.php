@@ -114,12 +114,12 @@ class SpaceSeeder extends Seeder
             // GRANDES SALLES DE RÉUNION
             // =============================================
             [
-                'name' => 'Grande Salle de Réunion',
-                'slug' => 'grande-salle-reunion',
+                'name' => 'Salle de Réunion',
+                'slug' => 'salle-reunion',
                 'type' => 'meeting',
                 'capacity' => '12-20 personnes',
                 'price' => 600, // Prix par défaut (prix journalier)
-                'description' => 'Grande salle de réunion équipée pour accueillir jusqu\'à 20 personnes. Idéale pour les séminaires, formations et grandes réunions.',
+                'description' => 'Salle de réunion équipée pour accueillir jusqu\'à 20 personnes. Idéale pour les séminaires, formations et grandes réunions.',
                 'amenities' => json_encode([
                     'WiFi Fibre Haut Débit',
                     'Écran géant 85" 4K',
@@ -139,12 +139,12 @@ class SpaceSeeder extends Seeder
             // PETITES SALLES DE RÉUNION
             // =============================================
             [
-                'name' => 'Petite Salle de Réunion',
-                'slug' => 'petite-salle-reunion',
-                'type' => 'meeting',
-                'capacity' => '4-8 personnes',
-                'price' => 450, // Prix par défaut (prix journalier)
-                'description' => 'Petite salle de réunion intime, parfaite pour les réunions d\'équipe, les entretiens clients et les brainstorming.',
+                'name' => 'Salle de Formation',
+                'slug' => 'salle-formation',
+                'type' => 'formation',
+                'capacity' => '12-20 personnes',
+                'price' => 600, // Prix par défaut (prix journalier)
+                'description' => 'Salle de Formation intime, parfaite pour les réunions d\'équipe, les entretiens clients et les brainstorming.',
                 'amenities' => json_encode([
                     'WiFi Fibre Haut Débit',
                     'Écran 55" 4K',

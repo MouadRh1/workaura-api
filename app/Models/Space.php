@@ -33,7 +33,8 @@ class Space extends Model
     const TYPES = [
         'private' => 'Bureau Privé',
         'coworking' => 'Coworking',
-        'meeting' => 'Salle de Réunion'
+        'meeting' => 'Salle de Réunion',
+        'formation' => 'Salle de Formation',
     ];
 
     const STATUSES = [
