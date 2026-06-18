@@ -11,6 +11,7 @@ use App\Http\Controllers\API\Admin\SpaceController as AdminSpaceController;
 use App\Http\Controllers\API\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\API\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\API\Admin\ContactController as AdminContactController;
+use App\Http\Controllers\API\Admin\EmailController as AdminEmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,20 +20,20 @@ use App\Http\Controllers\API\Admin\ContactController as AdminContactController;
 */
 
 // =============================================
-// ROUTES PUBLIQUES
+// ROUTES PUBLIQUES (Authentification non requise)
 // =============================================
 
 // Authentification
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Espaces
+// Espaces (public)
 Route::get('/spaces', [SpaceController::class, 'index']);
 Route::get('/spaces/{slug}', [SpaceController::class, 'show']);
 Route::get('/spaces/{id}/availability', [SpaceController::class, 'checkAvailability']);
 Route::get('/spaces/{id}/pricing', [BookingController::class, 'getPricingOptions']);
 
-// Galerie
+// Galerie (public)
 Route::get('/gallery', [GalleryController::class, 'index']);
 Route::get('/gallery/{slug}', [GalleryController::class, 'show']);
 
@@ -50,13 +51,16 @@ Route::prefix('bookings')->group(function () {
 });
 
 // =============================================
-// ROUTES UTILISATEUR (authentifié)
+// ROUTES UTILISATEUR (Authentification requise)
 // =============================================
 Route::middleware(['auth:sanctum'])->group(function () {
+    
+    // Authentification
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
     
+    // Mes réservations
     Route::prefix('my-bookings')->group(function () {
         Route::get('/', [BookingController::class, 'myBookings']);
         Route::get('/{id}', [BookingController::class, 'show']);
@@ -65,13 +69,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 // =============================================
-// ROUTES ADMIN
+// ROUTES ADMIN (Authentification + Rôle Admin)
 // =============================================
 Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
         
-        // Dashboard
+        // =============================================
+        // DASHBOARD
+        // =============================================
         Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
         
         // =============================================
@@ -121,4 +127,9 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::put('/{id}/reply', [AdminContactController::class, 'markAsReplied']);
             Route::delete('/{id}', [AdminContactController::class, 'destroy']);
         });
+        
+        // =============================================
+        // ENVOI D'EMAILS
+        // =============================================
+        Route::post('/send-email', [AdminEmailController::class, 'send']);
     });
