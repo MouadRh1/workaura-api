@@ -9,8 +9,11 @@ use App\Models\PricingOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Mail\BookingConfirmation;
+use App\Mail\NewBookingNotification;
 
 class BookingController extends Controller
 {
@@ -177,13 +180,28 @@ class BookingController extends Controller
         // ── Créer la réservation ──────────────────────────────────────────────────
         $booking = Booking::create($bookingData);
 
+        // ── Envoyer les emails ─────────────────────────────────────────────────────
+        $token = $bookingData['guest_token'];
+        
+        try {
+            // 1. Email de confirmation au client
+            Mail::to($guestEmail)->send(new BookingConfirmation($booking, $token));
+            
+            // 2. Email de notification à l'admin
+            Mail::to('contact@workaura.ma')->send(new NewBookingNotification($booking));
+            
+        } catch (\Exception $e) {
+            // Log l'erreur mais la réservation est déjà créée
+            \Log::error('Erreur envoi email: ' . $e->getMessage());
+        }
+
         return response()->json([
             'booking'          => $booking->load('space'),
-            'token'            => $bookingData['guest_token'],
+            'token'            => $token,
             'discount_applied' => $discount > 0 ? round($discount) : null,
             'room_size'        => $request->room_size,
-            'message'          => 'Réservation créée avec succès.',
-            'confirmation_url' => url("/api/bookings/{$bookingData['guest_token']}/confirm"),
+            'message'          => 'Réservation créée avec succès. Un email de confirmation vous a été envoyé.',
+            'confirmation_url' => url("/api/bookings/{$token}/confirm"),
         ], 201);
     }
 
@@ -235,12 +253,14 @@ class BookingController extends Controller
     {
         // Pour les réservations courtes (heure, demi-journée, journée)
         if (in_array($request->duration_type, ['hourly', '2_hours', 'half_day', 'daily'])) {
-            $endTime = $this->calculateEndTime(
-                $request->start_time,
-                PricingOption::where('space_id', $request->space_id)
-                    ->where('duration_type', $request->duration_type)
-                    ->first()->duration_hours ?? 1
-            );
+            // Récupérer l'option de prix pour avoir la durée
+            $pricingOption = PricingOption::where('space_id', $request->space_id)
+                ->where('duration_type', $request->duration_type)
+                ->first();
+                
+            $durationHours = $pricingOption ? $pricingOption->duration_hours : 1;
+            
+            $endTime = $this->calculateEndTime($request->start_time, $durationHours);
 
             return !Booking::where('space_id', $request->space_id)
                 ->where('booking_date', $request->booking_date)
