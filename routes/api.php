@@ -54,12 +54,12 @@ Route::prefix('bookings')->group(function () {
 // ROUTES UTILISATEUR (Authentification requise)
 // =============================================
 Route::middleware(['auth:sanctum'])->group(function () {
-    
+
     // Authentification
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
-    
+
     // Mes réservations
     Route::prefix('my-bookings')->group(function () {
         Route::get('/', [BookingController::class, 'myBookings']);
@@ -74,18 +74,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
-        
+
         // =============================================
         // DASHBOARD
         // =============================================
         Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-        
+
         // =============================================
         // GESTION DES ESPACES
         // =============================================
         Route::apiResource('spaces', AdminSpaceController::class)->except(['show']);
         Route::get('/spaces/{id}', [AdminSpaceController::class, 'show']);
-        
+
         // Images multiples
         Route::prefix('spaces/{id}')->group(function () {
             Route::get('/images', [AdminSpaceController::class, 'getImages']);
@@ -93,14 +93,14 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::put('/images/{imageId}', [AdminSpaceController::class, 'updateImage']);
             Route::delete('/images/{imageId}', [AdminSpaceController::class, 'deleteImage']);
         });
-        
+
         // Options de prix
         Route::prefix('spaces/{id}/pricing')->group(function () {
             Route::post('/', [AdminSpaceController::class, 'addPricingOption']);
             Route::put('/{pricingId}', [AdminSpaceController::class, 'updatePricingOption']);
             Route::delete('/{pricingId}', [AdminSpaceController::class, 'deletePricingOption']);
         });
-        
+
         // =============================================
         // GESTION DES RÉSERVATIONS
         // =============================================
@@ -111,12 +111,12 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::put('/{id}', [AdminBookingController::class, 'update']);
             Route::delete('/{id}', [AdminBookingController::class, 'destroy']);
         });
-        
+
         // =============================================
         // GESTION DE LA GALERIE
         // =============================================
         Route::apiResource('gallery', AdminGalleryController::class);
-        
+
         // =============================================
         // GESTION DES CONTACTS
         // =============================================
@@ -127,7 +127,12 @@ Route::middleware(['auth:sanctum', 'admin'])
             Route::put('/{id}/reply', [AdminContactController::class, 'markAsReplied']);
             Route::delete('/{id}', [AdminContactController::class, 'destroy']);
         });
-        
+
+        // Routes pour les utilisateurs
+        Route::get('/users', [App\Http\Controllers\API\Admin\UserController::class, 'index']);
+        Route::put('/users/{id}/role', [App\Http\Controllers\API\Admin\UserController::class, 'updateRole']);
+        Route::delete('/users/{id}', [App\Http\Controllers\API\Admin\UserController::class, 'destroy']);
+
         // =============================================
         // ENVOI D'EMAILS
         // =============================================
